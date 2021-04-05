@@ -1,0 +1,4 @@
+# Docker Upstart and SysVinit configuration file
+
+# Use DOCKER_OPTS to modify the daemon startup options.
+DOCKER_OPTS="--insecure-registry=localhost:{{ docker_registry_port }} -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock"

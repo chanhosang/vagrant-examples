@@ -1,0 +1,13 @@
+# Used to run the machine in either local environment. This variable can be used for another environment (if any) in future.
+machine_location: "local"
+
+local:
+  # VM Linux standard timezone
+  timezone: "Asia/Kuala_Lumpur"
+  # VM cpus and memory
+  vb.cpus: 1
+  vb.memory: 2048
+
+local_static:
+  # sudo user inside the VM without password
+  vm_user: "vagrant"

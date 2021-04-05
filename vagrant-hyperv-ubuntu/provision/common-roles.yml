@@ -1,0 +1,26 @@
+# To install common softwares on Linux Virtual Machines to
+# pull common roles from ansible_roles repository.
+#
+# # For example,
+# ansible-playbook debug.yml -i "localhost," -c local --extra-vars '{"vm_user":"vagrant"}'
+
+---
+- hosts: all
+  become: true
+  become_user: root
+  become_method: sudo
+
+  roles:
+    # Install Git and copy common roles from ansible_roles repository
+    # - bootstrap.git
+    - utility.ubuntu.docker-ce
+    - utility.ubuntu.docker-gc
+
+  tasks:
+  - name: Check Shell
+    shell: |
+        echo Hello
+
+  - name: Hello World
+    debug:
+      msg: "Hello {{vm_user}}!"

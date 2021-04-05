@@ -1,0 +1,20 @@
+---
+
+- name: Create bin folder
+  file:
+    path: /home/{{ vm_user }}/bin
+    state: directory
+
+- name: Copy script template
+  template:
+    src: "clean-temporary-data"
+    dest: "/home/{{ vm_user }}/bin/clean-temporary-data"
+    mode: 0750
+    owner: "{{ vm_user }}"
+    group: "{{ vm_user }}"
+
+- name: Link container cleanup script to cron.daily
+  file:
+    src: /home/{{ vm_user }}/bin/clean-temporary-data
+    dest: /etc/cron.hourly/clean-temporary-data
+    state: link
