@@ -1,5 +1,4 @@
 ---
-# https://docs.docker.com/engine/install/ubuntu/
 # Set a default working directory
 - set_fact:
     workspace_dir: "/tmp"
@@ -18,14 +17,10 @@
       - software-properties-common
   when: ansible_distribution == 'Ubuntu'
 
-
-- name: Copy scripts to workspace directory
-  copy:
-    src: "{{ item }}"
-    dest: "{{ workspace_dir }}/{{ item }}"
-    mode: "0755"
-  with_items:
-    - install-docker-compose.sh
+###############################################################
+# Install Docker Engine
+# https://docs.docker.com/engine/install/ubuntu/
+###############################################################
 
 - name: Add docker’s official key
   shell: |
@@ -47,38 +42,14 @@
       - containerd.io
   when: ansible_distribution == 'Ubuntu'
 
-
 - name: Add vm user to docker group
   user: name={{ vm_user }} groups=docker append=yes
-
-- name: Install docker-compose
-  shell: |
-      ./install-docker-compose.sh {{ docker_compose_version }}
-  args:
-    chdir: "{{ workspace_dir }}"
-  register: install_result
-  changed_when: "install_result.rc == 1"
-  failed_when: "install_result.rc == -1"
 
 # In case the remote API is not enabled successfully, refer to https://medium.com/@ssmak/how-to-enable-docker-remote-api-on-docker-host-7b73bd3278c6
 # You can't use 127.0.0.1 (which will resolve to container network namespace, not seing actual host) inside the container itself
 # Might need to modify /lib/systemd/system/docker.service instead of /etc/default/docker. Refer to https://github.com/moby/moby/issues/25357
 - name: Copy docker defaults file
   template: src=docker dest=/etc/default/docker owner=root group=root
-  notify:
-  - Restart Docker
-
-- name: Enable docker remote API
-  shell: |
-    sed -i 's/-H fd:\/\/ --containerd=\/run\/containerd\/containerd.sock/-H fd:\/\/ -H=tcp:\/\/0.0.0.0:2375 --containerd=\/run\/containerd\/containerd.sock/g' \
-    /lib/systemd/system/docker.service
-  when: ansible_distribution == 'Ubuntu'
-
-- name: Daemon Reload
-  shell: systemctl daemon-reload
-
-- name: Restart Docker
-  service: name=docker state=restarted
 
 # systemctl is-enabled docker
 - name: Start docker
@@ -89,13 +60,48 @@
     name: docker
     enabled: yes
 
+- name: Enable docker remote API
+  lineinfile:
+    path: /lib/systemd/system/docker.service
+    regexp: "ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock"
+    line: "ExecStart=/usr/bin/dockerd -H fd:// -H=tcp://0.0.0.0:2375 --containerd=/run/containerd/containerd.sock"
+  register: enableRemoteAPI
+
+- name: Daemon Reload
+  shell: systemctl daemon-reload
+  when: enableRemoteAPI.changed
+
+- name: Restart Docker
+  service: name=docker state=restarted
+  when: enableRemoteAPI.changed
+
 - name: Confirm docker remote API is enabled
   shell: |
     curl http://localhost:2375/images/json
   register: out
+  when: enableRemoteAPI.changed
 
 - debug:
     msg: "{{ out.stdout  }}"
+  when: enableRemoteAPI.changed
 
+###############################################################
+# Install Docker Compose
+###############################################################
 
+- name: Copy scripts to workspace directory
+  copy:
+    src: "{{ item }}"
+    dest: "{{ workspace_dir }}/{{ item }}"
+    mode: "0755"
+  with_items:
+    - install-docker-compose.sh
 
+- name: Install docker-compose
+  shell: |
+      ./install-docker-compose.sh {{ docker_compose_version }}
+  args:
+    chdir: "{{ workspace_dir }}"
+  register: install_result
+  changed_when: "install_result.rc == 1"
+  failed_when: "install_result.rc == -1"

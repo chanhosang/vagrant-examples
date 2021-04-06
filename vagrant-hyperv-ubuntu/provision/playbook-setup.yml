@@ -1,0 +1,14 @@
+# To change ansible configuration on Linux Virtual Machines
+#
+# # For example,
+# ansible-playbook $HOME/.ansible/playbook-setup.yml -i "localhost," -c local
+
+---
+- hosts: all
+  become: true
+  become_user: root
+  become_method: sudo
+
+  roles:
+    - ansible.setup
+

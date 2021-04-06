@@ -6,7 +6,12 @@ local:
   timezone: "Asia/Kuala_Lumpur"
   # VM cpus and memory
   vb.cpus: 1
-  vb.memory: 2048
+  vb.memory: 1024
+  vb.vmname: "MyHyper-VM"
+
+  # To choose a default switch to attach to the Hyper-V instance.
+  # If none of the existing switches are appropriate, please open the Hyper-V manager to create a new virtual switch.
+  config.vm.network.bridge: "Default Switch"
 
 local_static:
   # sudo user inside the VM without password

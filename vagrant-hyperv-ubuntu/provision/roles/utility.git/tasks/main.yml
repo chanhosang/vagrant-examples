@@ -1,0 +1,14 @@
+---
+- name: Install Git Client
+  yum: pkg=git state=present
+
+- name: Ensure GitHub is in known hosts
+  lineinfile:
+      dest: /home/{{ vm_user }}/.ssh/known_hosts
+      create: yes
+      state: present
+      mode: "0600"
+      owner: "{{ vm_user }}"
+      group: "{{ vm_user }}"
+      line: "{{ lookup('pipe', 'ssh-keyscan -t rsa github.com') }}"
+      regexp: "^github\\.com"

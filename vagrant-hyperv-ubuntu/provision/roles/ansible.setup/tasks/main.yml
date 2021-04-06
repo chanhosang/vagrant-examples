@@ -1,0 +1,18 @@
+---
+- name: Setup Ansible task execution time log
+  lineinfile:
+    path: /etc/ansible/ansible.cfg
+    regexp: "callback_whitelist\\s*="
+    line: "callback_whitelist    = profile_tasks"
+
+- name: Enable YAML callback plugin for a better CLI experience
+  lineinfile:
+    path: /etc/ansible/ansible.cfg
+    regexp: "stdout_callback\\s*="
+    line: "stdout_callback = yaml"
+
+- name: Enable usage of stdout_callback when running ad-hoc commands
+  lineinfile:
+    path: /etc/ansible/ansible.cfg
+    regexp: "bin_ansible_callbacks\\s*="
+    line: "bin_ansible_callbacks = True"

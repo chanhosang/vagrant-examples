@@ -1,0 +1,21 @@
+# To install common softwares on Linux Virtual Machines
+#
+# # For example,
+# ansible-playbook $HOME/.ansible/playbook-common-utilities.yml -i "localhost," -c local --extra-vars '{"vm_user":"vagrant"}'
+
+---
+- hosts: all
+  become: true
+  become_user: root
+  become_method: sudo
+
+  tasks:
+  - debug:
+      msg: "Hello {{vm_user}}! Welcome to Ubuntu!"
+
+  roles:
+    - utility.git
+    - utility.docker-ce
+    - utility.docker-gc
+
+
